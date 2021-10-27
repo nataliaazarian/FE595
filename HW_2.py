@@ -1,8 +1,12 @@
+import os
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-def co_detail_extract(num_co=50):
+os.chdir(r'C:\Users\Nazarilla\OneDrive\Documents\Academic\Stevens Institute\FinTech\Git Projects\FE595')
+
+def detail_extract(num_co=50):
     
     # Create blank dataframe for select company information
     co_info = pd.DataFrame({"Name":[], "Purpose":[]})
@@ -35,33 +39,26 @@ def co_detail_extract(num_co=50):
     
     return co_info
 
+
 def combine_files():
 
-    df = pd.DataFrame({"Company_Name":[], "Company_Purpose":[]})
+    df = pd.DataFrame({"Name":[], "Purpose":[]})
+    
+    subdf_1 = pd.read_csv('Companies.csv', names=["Name", "Purpose"])
+    subdf_2 = pd.read_csv('name_purpose_pairs.csv', names=["Name", "Purpose"])
+    subdf_3 = pd.read_csv('fake_company.csv', sep='\t', usecols=["Name", "Purpose"])
+    subdf_4 = pd.read_csv('company_info.csv')
 
-    files = glob.glob("data/*.csv")
-    for file in files:
-        try:
-            tempdf = pd.read_csv(file)
-        except:
-            tempdf = pd.read_csv(file, sep="\t")
-        
-        try:
-            tempdf.columns = df.columns
-        except:
-            tempdf.drop("Unnamed: 0", axis=1, inplace=True)
-            tempdf.columns = df.columns
-
-        df = df.append(tempdf, ignore_index=True)
+    df = pd.concat([subdf_1, subdf_2, subdf_3, subdf_4], ignore_index=True)
 
     return df
 
 
 def perform_nlp(df):
     
-    sid = SentimentIntensityAnalyzer()
+    sia = SentimentIntensityAnalyzer()
 
-    df["Sentiment"] = df["Company_Purpose"].apply(lambda x: sid.polarity_scores(x)['compound'])
+    df["Sentiment"] = df["Purpose"].apply(lambda x: sia.polarity_scores(x)['compound'])
 
     df.sort_values("Sentiment", ascending=False, inplace=True)
 
@@ -70,7 +67,8 @@ def perform_nlp(df):
     df.to_csv("output.csv", index=False)
     return df
 
-
+if __name__ == '__main__':
+    detail_extract(num_co=50)
 
 if __name__ == '__main__':
 
@@ -78,6 +76,3 @@ if __name__ == '__main__':
     perform_nlp(combine_files())
     # perform_nlp(combine_files())
     # print(pd.read_csv("data/fake_company.csv", sep="\t"))
-
-# if __name__ == '__main__':
-#     co_detail_extract()

@@ -6,7 +6,7 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 os.chdir(r'C:\Users\Nazarilla\OneDrive\Documents\Academic\Stevens Institute\FinTech\Git Projects\FE595')
 
-def detail_extract(num_co=50):
+def scrape_web(num_co=50):
     
     # Create blank dataframe for select company information
     co_info = pd.DataFrame({"Name":[], "Purpose":[]})
@@ -42,13 +42,16 @@ def detail_extract(num_co=50):
 
 def combine_files():
 
+    # Create blank dataframe
     df = pd.DataFrame({"Name":[], "Purpose":[]})
     
+    # Import and transform other files to have consistent format
     subdf_1 = pd.read_csv('Companies.csv', names=["Name", "Purpose"])
     subdf_2 = pd.read_csv('name_purpose_pairs.csv', names=["Name", "Purpose"])
     subdf_3 = pd.read_csv('fake_company.csv', sep='\t', usecols=["Name", "Purpose"])
     subdf_4 = pd.read_csv('company_info.csv')
 
+    # Concatinate all files into one dataframe
     df = pd.concat([subdf_1, subdf_2, subdf_3, subdf_4], ignore_index=True)
 
     return df
@@ -56,23 +59,28 @@ def combine_files():
 
 def perform_nlp(df):
     
+    # Assign short name for sentiment analyzer tool
     sia = SentimentIntensityAnalyzer()
 
+    # Create new column to store sentiment score
     df["Sentiment"] = df["Purpose"].apply(lambda x: sia.polarity_scores(x)['compound'])
 
+    # Rank companies based on sentiment score
     df.sort_values("Sentiment", ascending=False, inplace=True)
 
-    print(df.head())
-    print(df.tail())
+    # Print top 5 and bottom 5 companies
+    print(df.head(5))
+    print(df.tail(5))
+    
+    '''It appears as though the sentiment analysis highly ranks companies with buzz words 
+    (such as innovation or productivity) while companies with technical descriptions 
+    (refering to software and applications) are ranked lower'''
+    
+    # Export complete list with scores to csv
     df.to_csv("output.csv", index=False)
+    
     return df
 
 if __name__ == '__main__':
-    detail_extract(num_co=50)
-
-if __name__ == '__main__':
-
-    # print(combine_files())
+    # scrape_web(num_co=50)
     perform_nlp(combine_files())
-    # perform_nlp(combine_files())
-    # print(pd.read_csv("data/fake_company.csv", sep="\t"))

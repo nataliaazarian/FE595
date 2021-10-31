@@ -73,8 +73,9 @@ def perform_nlp(df):
     print(df.tail(5))
     
     '''It appears as though the sentiment analysis highly ranks companies with buzz words 
-    (such as innovation or productivity) while companies with technical descriptions 
-    (refering to software and applications) are ranked lower'''
+    (such as innovation or productivity) while companies with descriptions using slang 
+    (such as killer) are ranked lower. It is not a surprise that most company descriptions
+    contain positive words/phrases.'''
     
     # Export complete list with scores to csv
     df.to_csv("output.csv", index=False)
